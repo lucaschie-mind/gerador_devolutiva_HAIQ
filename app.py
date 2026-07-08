@@ -270,13 +270,27 @@ if st.session_state.get("searched") and "df_result" in st.session_state:
         if not finalizados.empty:
             st.markdown("#### 🔗 Links de Devolutiva")
             for _, row in finalizados.iterrows():
-                sid  = row["session_id"]
-                nome = row["Nome"]
-                tent = row["Tentativa"]
-                label = f"{nome} ({row['Email']})" + (f" — tentativa {tent}" if tent != "Única" else "")
+                sid   = row["session_id"]
+                nome  = row["Nome"]
+                tent  = row["Tentativa"]
+                email = row["Email"]
+                label = f"**{nome}** ({email})" + (f" — tentativa {tent}" if tent != "Única" else "")
+                url_cand = f"{BASE_URL}/devolutiva/{sid}"
+                url_rh   = f"{BASE_URL}/admin/devolutiva/{sid}"
+
+                st.markdown(label)
                 c_link, c_rh = st.columns(2)
-                c_link.markdown(f"[👤 Devolutiva candidato — {label}]({BASE_URL}/devolutiva/{sid})")
-                c_rh.markdown(f"[📋 Devolutiva RH — {label}]({BASE_URL}/admin/devolutiva/{sid})")
+                c_link.markdown(
+                    "👤 **Devolutiva Candidato**  \n"
+                    f'<a href="{url_cand}" target="_blank">{url_cand}</a>',
+                    unsafe_allow_html=True,
+                )
+                c_rh.markdown(
+                    "📋 **Devolutiva RH**  \n"
+                    f'<a href="{url_rh}" target="_blank">{url_rh}</a>',
+                    unsafe_allow_html=True,
+                )
+                st.divider()
 
         st.divider()
 
