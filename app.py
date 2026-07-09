@@ -46,8 +46,7 @@ with col_title:
 st.divider()
 
 # ── Conexão ───────────────────────────────────────────────────
-@st.cache_resource
-def get_conn():
+def make_conn():
     url = DATABASE_URL
     if not url:
         return None
@@ -57,7 +56,7 @@ def get_conn():
     return psycopg2.connect(url)
 
 def query_emails(emails: list[str]) -> pd.DataFrame:
-    conn = get_conn()
+    conn = make_conn()
     if not conn:
         st.error("DATABASE_URL não configurada nas variáveis de ambiente.")
         return pd.DataFrame()
@@ -103,7 +102,7 @@ def query_emails(emails: list[str]) -> pd.DataFrame:
                 "Status": "❌ Não iniciou",
                 "Case": "—", "Iniciou em": "—", "Finalizou em": "—",
                 "Duração (min)": "—", "HAI-Q": "—",
-                "D1": "—", "D2": "—", "D3": "—", "D4": "—",
+                "D1": None, "D2": None, "D3": None, "D4": None,
                 "Agência": "—",
                 "session_id": None,
                 "finalizado": False,
@@ -133,18 +132,19 @@ def query_emails(emails: list[str]) -> pd.DataFrame:
                     "Case":           r["case_titulo"] or "—",
                     "Iniciou em":     r["iniciou_em"].strftime("%d/%m/%Y %H:%M") if r["iniciou_em"] else "—",
                     "Finalizou em":   finalizou.strftime("%d/%m/%Y %H:%M") if finalizou else "—",
-                    "Duração (min)":  round(duracao / 60, 1) if duracao else "—",
-                    "HAI-Q":          round(haiq, 2) if haiq else "—",
-                    "D1":             round(r["d1"], 1) if r["d1"] else "—",
-                    "D2":             round(r["d2"], 1) if r["d2"] else "—",
-                    "D3":             round(r["d3"], 1) if r["d3"] else "—",
-                    "D4":             round(r["d4"], 1) if r["d4"] else "—",
+                    "Duração (min)":  str(round(duracao / 60, 1)) if duracao else "—",
+                    "HAI-Q":          round(haiq, 2) if haiq else None,
+                    "D1":             round(r["d1"], 1) if r["d1"] else None,
+                    "D2":             round(r["d2"], 1) if r["d2"] else None,
+                    "D3":             round(r["d3"], 1) if r["d3"] else None,
+                    "D4":             round(r["d4"], 1) if r["d4"] else None,
                     "Agência":        r["agencia"] or "—",
                     "session_id":     sid,
                     "finalizado":     bool(finalizou),
                 })
 
     cur.close()
+    conn.close()
     return pd.DataFrame(rows)
 
 # ── Entrada de e-mails ────────────────────────────────────────
